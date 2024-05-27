@@ -25,7 +25,7 @@ def get_random_cat_image_and_breed():
         image_data = response.json()[0]
         image_url = image_data['url']
         breeds = image_data.get('breeds', [])
-        breed = breeds[0]['name'] if breeds else 'Unknown'
+        breed = breeds[0]['name'] if breeds else 'Otro'
         return image_url, breed
     except requests.RequestException as e:
         print(f"Error fetching cat image: {e}")
@@ -62,7 +62,46 @@ def perros():
 @app.route('/gatos')
 def gatos():
     breeds = get_all_cat_breeds()
-    return render_template('gatos.html', breeds=breeds)
+    image_url, _ = get_random_cat_image_and_breed()
+    return render_template('gatos.html', breeds=breeds, cat_image_url=image_url)
+
+@app.route('/random_cat_image', methods=['POST'])
+def random_cat_image():
+    cat_image_url = get_random_cat_image_and_breed()
+    return redirect(url_for('gatos'))
+
+def get_breed_image(breed_id):
+    try:
+        headers = {'x-api-key': CAT_API_KEY}
+        response = requests.get(f'https://api.thecatapi.com/v1/images/search?breed_ids={breed_id}', headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        return data[0]['url']
+    except requests.RequestException as e:
+        print(f"Error fetching breed image: {e}")
+        return ''
+    
+def get_breed_info(breed_id):
+    try:
+        headers = {'x-api-key': CAT_API_KEY}
+        response = requests.get(f'https://api.thecatapi.com/v1/breeds/{breed_id}', headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching cat breed info: {e}")
+        return {}
+
+@app.route('/gatos/<breed_id>', methods=['GET', 'POST'])
+def raza(breed_id):
+    breed_info = get_breed_info(breed_id)
+    breed_image = get_breed_image(breed_id)
+    return render_template('razagato.html', breed_info=breed_info, breed_image=breed_image)
+
+@app.route('/generate_breed_image/<breed_id>', methods=['POST'])
+def generate_breed_image(breed_id):
+    breed_info = get_breed_info(breed_id)
+    breed_image = get_breed_image(breed_id)
+    return render_template('razagato.html', breed_info=breed_info, breed_image=breed_image)
 
 @app.route('/juegoperro')
 def juegoperro():
@@ -83,7 +122,7 @@ def juegogato():
     all_breeds = get_all_cat_breeds()
     breed_names = [breed['name'] for breed in all_breeds if breed['name'] != correct_breed]
     if len(breed_names) < 2:
-        breed_names = breed_names + ['Unknown', 'Unknown']
+        breed_names = breed_names + ['Otro', 'Otro']
     options = random.sample(breed_names, 2)
     options.append(correct_breed)
     random.shuffle(options)

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ breed_info.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Generador de Imágenes</h2>
+            <img id="catImage" src="{{ breed_image }}" alt="Imagen de gato" class="img-fluid">
+            <form action="{{ url_for('generate_breed_image', breed_id=breed_info.id) }}" method="post">
+                <button type="submit" class="btn btn-primary mt-3">Generar imagen de esta raza</button>
+            </form>              
+        </div>
+        <div class="col-md-6">
+            <h2>Información de la raza</h2>
+            <div>
+                <p><strong>Nombre:</strong> {{ breed_info.name }}</p>
+                <p><strong>Origen:</strong> {{ breed_info.origin }}</p>
+                <p><strong>Temperamento:</strong> {{ breed_info.temperament }}</p>
+                <p><strong>Esperanza de vida:</strong> {{ breed_info.life_span }} años.</p>
+                <p><strong>Descripción:</strong> {{ breed_info.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

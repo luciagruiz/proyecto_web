@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block titulopag %}Juego de Adivinar la Raza del Gato{% endblock %}
+{% block titulo %}Juego Gato{% endblock %}
+
+{% block contenido %}
+<h1>Juego: Adivinar la Raza del Gato</h1>
+<img src="{{ image_url }}" alt="Random Cat">
+<form id="cat-quiz">
+    {% for option in options %}
+    <label>
+        <input type="radio" name="breed" value="{{ option }}"> {{ option }}
+    </label>
+    {% endfor %}
+    <button type="button" onclick="checkAnswer()">Enviar</button>
+</form>
+<p id="result"></p>
+<script>
+    function checkAnswer() {
+        const selectedBreed = document.querySelector('input[name="breed"]:checked').value;
+        const correctBreed = "{{ correct_breed }}";
+        if (selectedBreed === correctBreed) {
+            document.getElementById('result').innerText = "¡Correcto!";
+        } else {
+            document.getElementById('result').innerText = `Incorrecto. La respuesta correcta es ${correctBreed}.`;
+        }
+    }
+</script>
+{% endblock %}
