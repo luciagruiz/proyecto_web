@@ -6,23 +6,49 @@ app = Flask(__name__)
 
 CAT_API_KEY = 'live_fArqX0s06QIhjlwfkD6mOu7a0r4W2Tm38Ply8sAXnR402wYhBTjyJ0JLW5HG4oS3'
 
-def get_random_dog_image():
-    response = requests.get('https://dog.ceo/api/breeds/image/random')
-    return response.json()['message']
+def get_random_dog_image_and_breed():
+    try:
+        response = requests.get('https://dog.ceo/api/breeds/image/random')
+        response.raise_for_status()
+        image_url = response.json()['message']
+        breed = image_url.split('/')[4]
+        return image_url, breed
+    except requests.RequestException as e:
+        print(f"Error fetching dog image: {e}")
+        return None, None
 
-def get_random_cat_image():
-    headers = {'x-api-key': CAT_API_KEY}
-    response = requests.get('https://api.thecatapi.com/v1/images/search', headers=headers)
-    return response.json()[0]['url']
+def get_random_cat_image_and_breed():
+    try:
+        headers = {'x-api-key': CAT_API_KEY}
+        response = requests.get('https://api.thecatapi.com/v1/images/search', headers=headers)
+        response.raise_for_status()
+        image_data = response.json()[0]
+        image_url = image_data['url']
+        breeds = image_data.get('breeds', [])
+        breed = breeds[0]['name'] if breeds else 'Unknown'
+        return image_url, breed
+    except requests.RequestException as e:
+        print(f"Error fetching cat image: {e}")
+        return None, None
 
 def get_all_dog_breeds():
-    response = requests.get('https://dog.ceo/api/breeds/list/all')
-    return response.json()['message']
+    try:
+        response = requests.get('https://dog.ceo/api/breeds/list/all')
+        response.raise_for_status()
+        return response.json()['message']
+    except requests.RequestException as e:
+        print(f"Error fetching dog breeds: {e}")
+        return {}
 
 def get_all_cat_breeds():
-    headers = {'x-api-key': CAT_API_KEY}
-    response = requests.get('https://api.thecatapi.com/v1/breeds', headers=headers)
-    return response.json()
+    try:
+        headers = {'x-api-key': CAT_API_KEY}
+        response = requests.get('https://api.thecatapi.com/v1/breeds', headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching cat breeds: {e}")
+        return []
 
 @app.route('/')
 def index():
@@ -40,23 +66,28 @@ def gatos():
 
 @app.route('/juegoperro')
 def juegoperro():
-    breeds = list(get_all_dog_breeds().keys())
-    correct_breed = random.choice(breeds)
-    image_url = get_random_dog_image()
-    options = random.sample(breeds, 3)
-    if correct_breed not in options:
-        options[random.randint(0, 2)] = correct_breed
+    image_url, correct_breed = get_random_dog_image_and_breed()
+    if not image_url or not correct_breed:
+        return "Error fetching dog image", 500
+    all_breeds = list(get_all_dog_breeds().keys())
+    options = random.sample(all_breeds, 2)
+    options.append(correct_breed)
+    random.shuffle(options)
     return render_template('juegoperro.html', image_url=image_url, options=options, correct_breed=correct_breed)
 
 @app.route('/juegogato')
 def juegogato():
-    breeds = get_all_cat_breeds()
-    correct_breed = random.choice(breeds)
-    image_url = get_random_cat_image()
-    options = random.sample([breed['name'] for breed in breeds], 3)
-    if correct_breed['name'] not in options:
-        options[random.randint(0, 2)] = correct_breed['name']
-    return render_template('juegogato.html', image_url=image_url, options=options, correct_breed=correct_breed['name'])
+    image_url, correct_breed = get_random_cat_image_and_breed()
+    if not image_url or not correct_breed:
+        return "Error fetching cat image", 500
+    all_breeds = get_all_cat_breeds()
+    breed_names = [breed['name'] for breed in all_breeds if breed['name'] != correct_breed]
+    if len(breed_names) < 2:
+        breed_names = breed_names + ['Unknown', 'Unknown']
+    options = random.sample(breed_names, 2)
+    options.append(correct_breed)
+    random.shuffle(options)
+    return render_template('juegogato.html', image_url=image_url, options=options, correct_breed=correct_breed)
 
 if __name__ == '__main__':
     app.run(debug=True)
