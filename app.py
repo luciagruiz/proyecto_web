@@ -25,7 +25,7 @@ def get_random_cat_image_and_breed():
         image_data = response.json()[0]
         image_url = image_data['url']
         breeds = image_data.get('breeds', [])
-        breed = breeds[0]['name'] if breeds else 'Otro'
+        breed = breeds[0]['name'] if breeds else None
         return image_url, breed
     except requests.RequestException as e:
         print(f"Error fetching cat image: {e}")
@@ -49,6 +49,35 @@ def get_all_cat_breeds():
     except requests.RequestException as e:
         print(f"Error fetching cat breeds: {e}")
         return []
+
+def get_random_cat_image_for_game(max_attempts=30):
+    headers = {'x-api-key': CAT_API_KEY}
+    for _ in range(max_attempts):
+        try:
+            response = requests.get('https://api.thecatapi.com/v1/images/search', headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            
+            if not data:
+                print("No data returned from the API.")
+                continue
+            
+            image_data = data[0]
+            image_url = image_data['url']
+            breeds = image_data.get('breeds', [])
+            
+            if not breeds:
+                print("No breed information available. Retrying...")
+                continue
+            
+            breed = breeds[0]['name']
+            return image_url, breed
+        except requests.RequestException as e:
+            print(f"Error fetching random cat image: {e}")
+    
+    print("Failed to fetch an image with breed information after several attempts.")
+    return None, None
+
 
 @app.route('/')
 def index():
@@ -114,19 +143,36 @@ def juegoperro():
     random.shuffle(options)
     return render_template('juegoperro.html', image_url=image_url, options=options, correct_breed=correct_breed)
 
-@app.route('/juegogato')
+@app.route('/juegogato', methods=['GET', 'POST'])
 def juegogato():
-    image_url, correct_breed = get_random_cat_image_and_breed()
-    if not image_url or not correct_breed:
+    if request.method == 'POST':
+        selected_breed = request.form.get('breed')
+        correct_breed = request.form.get('correct_breed')
+        if selected_breed == correct_breed:
+            result = f"¡Correcto! La raza es {correct_breed}."
+            result_class = "text-success"
+        else:
+            result = f"Incorrecto. La raza correcta es {correct_breed}."
+            result_class = "text-danger"
+    else:
+        result = None
+        result_class = None
+
+    image_url, correct_breed = get_random_cat_image_for_game()
+    if not image_url:
         return "Error fetching cat image", 500
+    
     all_breeds = get_all_cat_breeds()
-    breed_names = [breed['name'] for breed in all_breeds if breed['name'] != correct_breed]
-    if len(breed_names) < 2:
-        breed_names = breed_names + ['Otro', 'Otro']
+    breed_names = [breed['name'] for breed in all_breeds]
+    
+    if correct_breed in breed_names:
+        breed_names.remove(correct_breed)
+    
     options = random.sample(breed_names, 2)
     options.append(correct_breed)
     random.shuffle(options)
-    return render_template('juegogato.html', image_url=image_url, options=options, correct_breed=correct_breed)
+    
+    return render_template('juegogato.html', image_url=image_url, options=options, correct_breed=correct_breed, result=result, result_class=result_class)
 
 if __name__ == '__main__':
     app.run(debug=True)

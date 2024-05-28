@@ -32,9 +32,8 @@
 <!-- body -->
 <body class="main-layout">
     <!-- loader  -->
-    <div class="loader_bg">
-        <div class="loader"><img src="{{ url_for('static', filename='images/loading.gif') }}" alt="#" /></div>
-    </div>
+    {% block loader %}
+    {% endblock %}
     <!-- end loader -->
     <!-- header -->
     <header>

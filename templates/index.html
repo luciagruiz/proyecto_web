@@ -1,5 +1,9 @@
 {% extends "base.html" %}
-
+{% block loader %}
+<div class="loader_bg">
+    <div class="loader"><img src="{{ url_for('static', filename='images/loading.gif') }}" alt="#" /></div>
+</div>
+{% endblock %}
 {% block title %}
 Huellas y Patas - Inicio
 {% endblock %}

@@ -866,3 +866,61 @@ ul.location_icon li a {
      margin-top: 13%;
      margin-bottom: 8%;
 }
+
+/*=========================
+    Game Grid
+=========================*/
+
+
+ 
+ .cell {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     background: #f0f0f0;
+     border: 1px solid #030430;
+     cursor: pointer;
+     font-size: 2em;
+     color: #333;
+ }
+ 
+ /* CSS for Table */
+ 
+ table {
+     border-collapse: collapse;
+     width: 100%;
+ }
+ 
+ th,
+ td {
+     padding: 8px 12px;
+     border: 1px solid #073fa8;
+     text-align: left;
+ }
+ 
+ th {
+     background-color: #f4f4f4;
+ }
+ 
+ tr:nth-child(even) {
+     background-color: #f9f9f9;
+ }
+ 
+ tr:hover {
+     background-color: #f1f1f1;
+ }
+ 
+ #catImage {
+     max-width: 100%;
+     height: auto;
+     max-height: 400px; /* Esto establece una altura máxima de 400px */
+ }
+ 
+ #botonenviar {
+     margin-left: 50%; /* Ajusta este valor según sea necesario */
+ }
+
+ .col-md-raza{
+     margin-top: 17%;
+     margin-bottom: 4%;
+}
