@@ -12,6 +12,17 @@
             </form>                    
         </div>
         <div class="col-md-6">
+            <h2>Buscador de razas</h2>
+            <form action="{{ url_for('gatos') }}" method="get">
+                <div class="form-group">
+                    <input type="text" name="search" class="form-control" placeholder="Buscar razas de gatos">
+                </div>
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </form>
+            <br>
+            {% if no_results_message %}
+            <p>{{ no_results_message }}</p>
+            {% else %}
             <h2>Listado de razas</h2>
             <div class="breeds-container">
                 {% for breed in breeds %}
@@ -20,8 +31,8 @@
                 </div>
                 {% endfor %}
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
 {% endblock %}
-
