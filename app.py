@@ -64,9 +64,9 @@ def get_random_dog_image_and_breed():
     try:
         response = requests.get(f'{DOG_API_URL}breeds/image/random')
         response.raise_for_status()
-        image_data = response.json()['message']
-        image_url = image_data
-        breed = None
+        image_data = response.json()
+        image_url = image_data['message']
+        breed = image_data.get('status', '')
         return image_url, breed
     except requests.RequestException as e:
         print(f"Error fetching dog image: {e}")
@@ -88,7 +88,14 @@ def index():
 @app.route('/perros')
 def perros():
     breeds = get_all_dog_breeds()
-    return render_template('perros.html', breeds=breeds)
+    image_url, breed = get_random_dog_image_and_breed()
+    return render_template('perros.html', breeds=breeds, image_url=image_url, breed=breed)
+
+@app.route('/random_dog_image', methods=['POST'])
+def random_dog_image():
+    image_url, breed = get_random_dog_image_and_breed()
+    breeds = get_all_dog_breeds()
+    return render_template('perros.html', breeds=breeds, image_url=image_url, breed=breed)
 
 @app.route('/gatos')
 def gatos():
@@ -174,17 +181,6 @@ def juegogato():
     random.shuffle(options)
     
     return render_template('juegogato.html', image_url=image_url, options=options, correct_breed=correct_breed, result=result, result_class=result_class)
-
-@app.route('/juegoperro')
-def juegoperro():
-    image_url, correct_breed = get_random_dog_image_and_breed()
-    if not image_url or not correct_breed:
-        return "Error fetching dog image", 500
-    all_breeds = get_all_dog_breeds()
-    options = random.sample(all_breeds, 2)
-    options.append(correct_breed)
-    random.shuffle(options)
-    return render_template('juegoperro.html', image_url=image_url, options=options, correct_breed=correct_breed)
 
 if __name__ == '__main__':
     app.run(debug=True)
