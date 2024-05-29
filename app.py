@@ -104,7 +104,7 @@ def gatos():
     image_url, _ = get_random_cat_image_and_breed()
 
     if search_term:
-        filtered_breeds = [breed for breed in all_breeds if search_term.lower() in breed['name'].lower()]
+        filtered_breeds = [breed for breed in all_breeds if search_term.lower() in breed['name'].lower() and breed['name'].lower().startswith(search_term)]
         if not filtered_breeds:
             no_results_message = "No se ha encontrado ninguna raza con ese nombre."
             return render_template('gatos.html', breeds=[], cat_image_url=image_url, no_results_message=no_results_message)
